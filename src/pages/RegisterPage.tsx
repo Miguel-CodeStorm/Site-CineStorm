@@ -23,41 +23,37 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password: senha,
-        options: {
-          data: { nome },
-        },
-      });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: senha,
+      options: {
+        data: { nome },
+      },
+    });
 
-      if (error) {
-        if (error.message.includes('User already registered')) {
-          setErro('Este e-mail já está sendo utilizado.');
-        } else {
-          setErro(error.message);
-        }
-        return;
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes('already registered') || msg.includes('já cadastrado') || msg.includes('existente')) {
+        setErro('Este e-mail já está sendo utilizado.');
+      } else {
+        setErro('Erro ao criar conta: ' + error.message);
       }
-
+    } else {
       setSucesso('Conta criada com sucesso! Verifique seu e-mail.');
       setTimeout(() => navigate('/login'), 3000);
-    } catch (err) {
-      setErro('Erro inesperado. Tente novamente.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
       <form
         onSubmit={handleRegister}
-        className="bg-[#111] p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-800"
+        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md"
       >
-        <h1 className="text-2xl font-bold mb-6 text-center">Criar Conta</h1>
+        <h1 className="text-2xl font-bold mb-6">Criar Conta</h1>
 
-        {erro && <p className="text-red-500 mb-4 text-center">{erro}</p>}
-        {sucesso && <p className="text-green-500 mb-4 text-center">{sucesso}</p>}
+        {erro && <p className="text-red-500 mb-4">{erro}</p>}
+        {sucesso && <p className="text-green-500 mb-4">{sucesso}</p>}
 
         <input
           type="text"
@@ -102,8 +98,9 @@ const RegisterPage: React.FC = () => {
           Criar Conta
         </button>
 
-        <p className="text-center mt-4 text-gray-400">
-          Já tem uma conta? <a href="/login" className="text-blue-500">Entrar</a>
+        <p className="text-sm text-center mt-4">
+          Já tem uma conta?{' '}
+          <a href="/login" className="text-blue-400 hover:underline">Entrar</a>
         </p>
       </form>
     </div>
