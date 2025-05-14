@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { User } from '../types';
 import { signIn, signOut, getCurrentUser } from '../utils/supabase';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthState {
   user: User | null;
@@ -11,9 +12,13 @@ interface AuthState {
   subscription: 'free' | 'premium';
   loading: boolean;
   error: string | null;
+
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   initAuth: () => Promise<void>;
+
+  setUserFromSession: (supabaseUser: Session['user']) => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -119,5 +124,29 @@ export const useAuthStore = create<AuthState>((set) => ({
         subscription: 'free',
       });
     }
+  },
+
+  setUserFromSession: (supabaseUser) => {
+    if (!supabaseUser) return;
+
+    const userData: User = {
+      id: supabaseUser.id,
+      email: supabaseUser.email || '',
+      username: supabaseUser.user_metadata?.username || 'Usuário',
+      isAdmin: supabaseUser.user_metadata?.isAdmin || false,
+      subscription: supabaseUser.user_metadata?.subscription || 'free',
+      createdAt: supabaseUser.created_at,
+    };
+
+    set({
+      user: userData,
+      isAuthenticated: true,
+      isAdmin: userData.isAdmin,
+      subscription: userData.subscription,
+    });
+  },
+
+  setLoading: (loading: boolean) => {
+    set({ loading });
   },
 }));
