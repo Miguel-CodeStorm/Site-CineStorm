@@ -14,15 +14,15 @@ import RecoverPage from './pages/RecoverPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
 import SubscriptionPage from './pages/SubscriptionPage';
+import ConfirmadoPage from './pages/ConfirmadoPage'; // <<< Faltava esta linha
 
 function App() {
   const { initAuth } = useAuthStore();
-  
+
   useEffect(() => {
-    // Inicializar o estado de autenticação ao carregar o app
     initAuth();
   }, [initAuth]);
-  
+
   return (
     <Router>
       <Routes>
