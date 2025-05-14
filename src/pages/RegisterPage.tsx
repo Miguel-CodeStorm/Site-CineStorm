@@ -1,36 +1,70 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import RegisterForm from '../components/auth/RegisterForm';
+// src/pages/RegisterPage.tsx
+
+import React, { useState } from 'react';
+import { supabase } from '../supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [sucesso, setSucesso] = useState('');
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro('');
+    setSucesso('');
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: senha,
+    });
+
+    if (error) {
+      setErro(error.message);
+    } else {
+      setSucesso('Conta criada com sucesso! Verifique seu e-mail.');
+      setTimeout(() => navigate('/login'), 3000);
+    }
+  };
+
   return (
-    <div 
-      className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
-      style={{ 
-        backgroundImage: `url(https://images.pexels.com/photos/7991158/pexels-photo-7991158.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&dpr=1)` 
-      }}
-    >
-      <div className="absolute inset-0 bg-black/70"></div>
-      
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md px-4"
+    <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
+      <form
+        onSubmit={handleRegister}
+        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <a href="/" className="inline-block">
-            <h1 className="text-3xl font-bold">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-                Cine
-              </span>
-              <span className="text-white">Storm</span>
-            </h1>
-          </a>
-        </div>
-        
-        <RegisterForm />
-      </motion.div>
+        <h1 className="text-2xl font-bold mb-6">Criar Conta</h1>
+
+        {erro && <p className="text-red-500 mb-4">{erro}</p>}
+        {sucesso && <p className="text-green-500 mb-4">{sucesso}</p>}
+
+        <input
+          type="email"
+          placeholder="Seu e-mail"
+          className="w-full mb-4 p-3 rounded bg-gray-900 border border-gray-700"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Senha"
+          className="w-full mb-6 p-3 rounded bg-gray-900 border border-gray-700"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          required
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700 transition-all p-3 rounded font-bold"
+        >
+          Criar Conta
+        </button>
+      </form>
     </div>
   );
 };
