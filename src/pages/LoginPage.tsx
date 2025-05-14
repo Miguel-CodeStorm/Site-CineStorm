@@ -1,3 +1,5 @@
+// src/pages/LoginPage.tsx
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import LoginForm from '../components/auth/LoginForm';
