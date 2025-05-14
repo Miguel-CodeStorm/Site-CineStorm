@@ -7,13 +7,18 @@ import { useAuthStore } from '../../store/authStore';
 import { useMoviesStore } from '../../store/moviesStore';
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, user, logout } = useAuthStore();
+  const { isAuthenticated, user, logout, initAuth } = useAuthStore();
   const { searchQuery, setSearchQuery, searchMoviesAction } = useMoviesStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
+  // Garante que o auth seja inicializado ao montar
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -21,26 +26,28 @@ const Navbar: React.FC = () => {
       setIsOpen(false);
     }
   };
-  
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
   return (
-    <header 
+    <header
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/90 backdrop-blur-md py-2 shadow-lg' : 'bg-gradient-to-b from-black/80 to-transparent py-4'
+        isScrolled
+          ? 'bg-black/90 backdrop-blur-md py-2 shadow-lg'
+          : 'bg-gradient-to-b from-black/80 to-transparent py-4'
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <Logo />
-          
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <NavLink to="/" label="Início" active={location.pathname === '/'} />
@@ -50,7 +57,7 @@ const Navbar: React.FC = () => {
               <NavLink to="/admin" label="Admin" active={location.pathname === '/admin'} />
             )}
           </nav>
-          
+
           {/* Search Form */}
           <div className="hidden md:block relative">
             <form onSubmit={handleSearch} className="flex items-center">
@@ -66,7 +73,7 @@ const Navbar: React.FC = () => {
               </button>
             </form>
           </div>
-          
+
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
@@ -75,33 +82,33 @@ const Navbar: React.FC = () => {
                   <User size={18} className="mr-2" />
                   <span>{user?.username || 'Usuário'}</span>
                 </Link>
-                <button 
-                  onClick={() => logout()} 
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
                   className="ml-4 text-white/70 hover:text-white flex items-center"
                 >
                   <LogOut size={18} />
                 </button>
               </div>
             ) : (
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-4 rounded-full transition"
               >
                 Entrar
               </Link>
             )}
           </div>
-          
+
           {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-white"
-            onClick={() => setIsOpen(!isOpen)}
-          >
+          <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
-      
+
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
@@ -127,7 +134,7 @@ const Navbar: React.FC = () => {
                   </button>
                 </div>
               </form>
-              
+
               <nav className="flex flex-col space-y-3">
                 <MobileNavLink to="/" label="Início" onClick={() => setIsOpen(false)} />
                 <MobileNavLink to="/categories" label="Categorias" onClick={() => setIsOpen(false)} />
@@ -138,10 +145,11 @@ const Navbar: React.FC = () => {
                     {user?.isAdmin && (
                       <MobileNavLink to="/admin" label="Admin" onClick={() => setIsOpen(false)} />
                     )}
-                    <button 
+                    <button
                       onClick={() => {
                         logout();
                         setIsOpen(false);
+                        navigate('/');
                       }}
                       className="text-left text-red-400 py-2 flex items-center"
                     >
@@ -150,9 +158,9 @@ const Navbar: React.FC = () => {
                     </button>
                   </>
                 ) : (
-                  <MobileNavLink 
-                    to="/login" 
-                    label="Entrar / Cadastrar" 
+                  <MobileNavLink
+                    to="/login"
+                    label="Entrar / Cadastrar"
                     onClick={() => setIsOpen(false)}
                     className="bg-blue-600 py-2 px-4 rounded-md text-center"
                   />
@@ -195,11 +203,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, label, active, className }) => {
 
 const MobileNavLink: React.FC<NavLinkProps> = ({ to, label, onClick, className }) => {
   return (
-    <Link
-      to={to}
-      onClick={onClick}
-      className={`text-white py-2 block ${className}`}
-    >
+    <Link to={to} onClick={onClick} className={`text-white py-2 block ${className}`}>
       {label}
     </Link>
   );
