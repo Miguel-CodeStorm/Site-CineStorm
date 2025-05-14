@@ -54,9 +54,7 @@ const Footer: React.FC = () => {
         
         <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500 text-sm">
           <p>© {new Date().getFullYear()} CineStorm. Todos os direitos reservados.</p>
-          <p className="mt-2">
-            Este produto usa a API TMDB mas não é endossado ou certificado pelo TMDB.
-          </p>
+          
         </div>
       </div>
     </footer>
