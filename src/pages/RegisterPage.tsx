@@ -18,30 +18,42 @@ const RegisterPage: React.FC = () => {
     setErro('');
     setSucesso('');
 
+    // 1) Confirmação de senha
     if (senha !== confirmarSenha) {
       setErro('As senhas não coincidem.');
       return;
     }
 
+    // 2) Chama o Supabase
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
-        data: { nome }
-      }
+        data: { nome },
+      },
     });
 
+    // 3) Tratamento de erro vinda do supabase
     if (error) {
-      // 400 = usuário já existe
+      // Se for e-mail duplicado, o Supabase costuma retornar status 400
       if (error.status === 400) {
         setErro('Este e-mail já está sendo utilizado.');
       } else {
         setErro('Erro ao criar conta: ' + error.message);
       }
-    } else {
-      setSucesso('Conta criada com sucesso! Verifique seu e-mail.');
-      setTimeout(() => navigate('/login'), 3000);
+      return;
     }
+
+    // 4) Algumas versões do Supabase não retornam erro duplicado,
+    //    mas devolvem data.user === null nesse caso
+    if (!data.user) {
+      setErro('Este e-mail já está sendo utilizado.');
+      return;
+    }
+
+    // 5) Se tudo OK
+    setSucesso('Conta criada com sucesso! Verifique seu e-mail.');
+    setTimeout(() => navigate('/login'), 3000);
   };
 
   return (
