@@ -1,3 +1,5 @@
+// src/store/authStore.ts
+
 import { create } from 'zustand';
 import { User } from '../types';
 import { signIn, signOut, getCurrentUser } from '../utils/supabase';
@@ -21,59 +23,66 @@ export const useAuthStore = create<AuthState>((set) => ({
   subscription: 'free',
   loading: false,
   error: null,
-  
+
   login: async (email, password) => {
     set({ loading: true, error: null });
+
     try {
       const { data, error } = await signIn(email, password);
-      
-      if (error) {
-        set({ error: error.message, loading: false });
+
+      if (error || !data?.user) {
+        set({
+          error: error?.message || 'Email ou senha incorretos.',
+          isAuthenticated: false,
+          user: null,
+          loading: false,
+        });
         return;
       }
-      
-      if (data?.user) {
-        const userData = {
-          id: data.user.id,
-          email: data.user.email || '',
-          username: data.user.user_metadata?.username || 'Usuário',
-          isAdmin: data.user.user_metadata?.isAdmin || false,
-          subscription: data.user.user_metadata?.subscription || 'free',
-          createdAt: data.user.created_at,
-        };
-        
-        set({ 
-          user: userData, 
-          isAuthenticated: true,
-          isAdmin: userData.isAdmin,
-          subscription: userData.subscription,
-          loading: false 
-        });
-      }
+
+      const userData: User = {
+        id: data.user.id,
+        email: data.user.email || '',
+        username: data.user.user_metadata?.username || 'Usuário',
+        isAdmin: data.user.user_metadata?.isAdmin || false,
+        subscription: data.user.user_metadata?.subscription || 'free',
+        createdAt: data.user.created_at,
+      };
+
+      set({
+        user: userData,
+        isAuthenticated: true,
+        isAdmin: userData.isAdmin,
+        subscription: userData.subscription,
+        loading: false,
+        error: null,
+      });
     } catch (err) {
-      set({ error: 'Erro ao fazer login', loading: false });
+      set({ error: 'Erro ao conectar com o servidor.', loading: false });
     }
   },
-  
+
   logout: async () => {
     set({ loading: true });
     await signOut();
-    set({ 
-      user: null, 
-      isAuthenticated: false, 
+    set({
+      user: null,
+      isAuthenticated: false,
       isAdmin: false,
       subscription: 'free',
-      loading: false 
+      loading: false,
+      error: null,
     });
   },
-  
+
   initAuth: async () => {
     set({ loading: true });
+
     try {
       const user = await getCurrentUser();
-      
+
       if (user) {
-        const userData = {
+        const userData: User = {
           id: user.id,
           email: user.email || '',
           username: user.user_metadata?.username || 'Usuário',
@@ -81,19 +90,34 @@ export const useAuthStore = create<AuthState>((set) => ({
           subscription: user.user_metadata?.subscription || 'free',
           createdAt: user.created_at,
         };
-        
-        set({ 
-          user: userData, 
+
+        set({
+          user: userData,
           isAuthenticated: true,
           isAdmin: userData.isAdmin,
           subscription: userData.subscription,
-          loading: false 
+          loading: false,
+          error: null,
         });
       } else {
-        set({ loading: false });
+        set({
+          user: null,
+          isAuthenticated: false,
+          isAdmin: false,
+          subscription: 'free',
+          loading: false,
+          error: null,
+        });
       }
     } catch (err) {
-      set({ loading: false });
+      set({
+        user: null,
+        isAuthenticated: false,
+        loading: false,
+        error: 'Erro ao verificar sessão do usuário.',
+        isAdmin: false,
+        subscription: 'free',
+      });
     }
-  }
+  },
 }));
