@@ -2,32 +2,38 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 
 const LoginForm: React.FC = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
+  const { setUserFromSession, setLoading } = useAuthStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro('');
     setSucesso('');
+    setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
     });
 
-    if (error) {
+    if (error || !data?.user) {
       setErro('E-mail ou senha incorretos.');
+      setLoading(false);
       return;
     }
 
+    setUserFromSession(data.user);
     setSucesso('Login realizado com sucesso!');
-    setTimeout(() => navigate('/dashboard'), 2000);
+
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1000);
   };
 
   return (
