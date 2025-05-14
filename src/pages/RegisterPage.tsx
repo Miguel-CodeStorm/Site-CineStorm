@@ -6,8 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
 
@@ -16,9 +18,17 @@ const RegisterPage: React.FC = () => {
     setErro('');
     setSucesso('');
 
+    if (senha !== confirmarSenha) {
+      setErro('As senhas não coincidem.');
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password: senha,
+      options: {
+        data: { nome }
+      }
     });
 
     if (error) {
@@ -30,20 +40,29 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black to-gray-900 text-white px-4">
       <form
         onSubmit={handleRegister}
-        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md"
+        className="bg-gray-900 p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700"
       >
-        <h1 className="text-2xl font-bold mb-6">Criar Conta</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">Criar Conta</h1>
 
-        {erro && <p className="text-red-500 mb-4">{erro}</p>}
-        {sucesso && <p className="text-green-500 mb-4">{sucesso}</p>}
+        {erro && <p className="bg-red-700 text-white p-3 mb-4 rounded text-center">{erro}</p>}
+        {sucesso && <p className="bg-green-700 text-white p-3 mb-4 rounded text-center">{sucesso}</p>}
+
+        <input
+          type="text"
+          placeholder="Nome de Usuário"
+          className="w-full mb-4 p-3 rounded bg-gray-800 border border-gray-600 placeholder-gray-400"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          required
+        />
 
         <input
           type="email"
-          placeholder="Seu e-mail"
-          className="w-full mb-4 p-3 rounded bg-gray-900 border border-gray-700"
+          placeholder="Email"
+          className="w-full mb-4 p-3 rounded bg-gray-800 border border-gray-600 placeholder-gray-400"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -52,9 +71,18 @@ const RegisterPage: React.FC = () => {
         <input
           type="password"
           placeholder="Senha"
-          className="w-full mb-6 p-3 rounded bg-gray-900 border border-gray-700"
+          className="w-full mb-4 p-3 rounded bg-gray-800 border border-gray-600 placeholder-gray-400"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Confirmar Senha"
+          className="w-full mb-6 p-3 rounded bg-gray-800 border border-gray-600 placeholder-gray-400"
+          value={confirmarSenha}
+          onChange={(e) => setConfirmarSenha(e.target.value)}
           required
         />
 
@@ -64,6 +92,10 @@ const RegisterPage: React.FC = () => {
         >
           Criar Conta
         </button>
+
+        <p className="mt-4 text-center text-sm text-gray-400">
+          Já tem uma conta? <a href="/login" className="text-blue-400 hover:underline">Entrar</a>
+        </p>
       </form>
     </div>
   );
