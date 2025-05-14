@@ -1,50 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
 import { Menu, X, LogOut, User } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    // Verifica a sessão ativa
-    const getSession = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    };
-
-    getSession();
-
-    // Listener para manter a sessão atualizada
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-      } else if (event === 'SIGNED_IN') {
-        setUser(session?.user);
-      }
-    });
-
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
+  const {
+    user,
+    isAuthenticated,
+    logout,
+  } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    await logout();
     navigate('/login');
   };
 
@@ -64,11 +44,11 @@ const Navbar: React.FC = () => {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          {user ? (
+          {isAuthenticated ? (
             <>
               <Link to="/dashboard" className="text-white flex items-center gap-2">
                 <User size={18} />
-                <span>{user.email}</span>
+                <span>{user?.email}</span>
               </Link>
               <button onClick={handleLogout} className="text-red-400 hover:text-white flex items-center gap-2">
                 <LogOut size={18} />
@@ -93,7 +73,7 @@ const Navbar: React.FC = () => {
           <Link to="/" onClick={() => setIsOpen(false)}>Início</Link>
           <Link to="/categories" onClick={() => setIsOpen(false)}>Categorias</Link>
           <Link to="/favorites" onClick={() => setIsOpen(false)}>Favoritos</Link>
-          {user ? (
+          {isAuthenticated ? (
             <>
               <Link to="/dashboard" onClick={() => setIsOpen(false)}>Minha Conta</Link>
               <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-red-400">
