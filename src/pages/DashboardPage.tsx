@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogOut, User, Settings, CreditCard, Heart } from 'lucide-react';
@@ -7,17 +7,27 @@ import Button from '../components/ui/Button';
 import { useAuthStore } from '../store/authStore';
 
 const DashboardPage: React.FC = () => {
-  const { user, isAuthenticated, subscription, logout } = useAuthStore();
   const navigate = useNavigate();
-  
-  // Redirecionar para login se não estiver autenticado
-  React.useEffect(() => {
-    if (!isAuthenticated) {
+  const {
+    user,
+    isAuthenticated,
+    subscription,
+    logout,
+    loading,
+    initAuth
+  } = useAuthStore();
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
-  
-  if (!isAuthenticated || !user) {
+  }, [loading, isAuthenticated, navigate]);
+
+  if (loading || !user) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
@@ -26,7 +36,7 @@ const DashboardPage: React.FC = () => {
       </Layout>
     );
   }
-  
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-20 pt-32">
@@ -38,9 +48,9 @@ const DashboardPage: React.FC = () => {
         >
           Minha Conta
         </motion.h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Coluna de informações do usuário */}
+          {/* Informações do usuário */}
           <div className="md:col-span-1">
             <div className="bg-gray-800 rounded-lg p-6">
               <div className="flex items-center mb-6">
@@ -52,7 +62,7 @@ const DashboardPage: React.FC = () => {
                   <p className="text-gray-400">{user.email}</p>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <h3 className="text-white font-medium mb-2">Plano Atual</h3>
                 <div className={`py-2 px-3 rounded-md ${
@@ -62,7 +72,6 @@ const DashboardPage: React.FC = () => {
                 }`}>
                   {subscription === 'premium' ? 'Premium' : 'Gratuito'}
                 </div>
-                
                 {subscription !== 'premium' && (
                   <a 
                     href="/subscription" 
@@ -72,17 +81,17 @@ const DashboardPage: React.FC = () => {
                   </a>
                 )}
               </div>
-              
+
               <div className="mb-6">
                 <h3 className="text-white font-medium mb-2">Membro desde</h3>
                 <p className="text-gray-300">
                   {new Date(user.createdAt).toLocaleDateString('pt-BR')}
                 </p>
               </div>
-              
+
               <Button 
                 variant="danger"
-                onClick={() => logout()}
+                onClick={logout}
                 className="flex items-center justify-center gap-2"
                 fullWidth
               >
@@ -91,8 +100,8 @@ const DashboardPage: React.FC = () => {
               </Button>
             </div>
           </div>
-          
-          {/* Coluna de ações e configurações */}
+
+          {/* Cards e ações */}
           <div className="md:col-span-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
               <DashboardCard 
@@ -102,7 +111,7 @@ const DashboardPage: React.FC = () => {
                 buttonText="Ver Favoritos"
                 buttonLink="/favorites"
               />
-              
+
               <DashboardCard 
                 icon={<Settings size={24} className="text-gray-400" />}
                 title="Configurações"
@@ -110,7 +119,7 @@ const DashboardPage: React.FC = () => {
                 buttonText="Configurações"
                 buttonLink="#"
               />
-              
+
               <DashboardCard 
                 icon={<CreditCard size={24} className="text-green-500" />}
                 title="Assinatura"
@@ -118,7 +127,7 @@ const DashboardPage: React.FC = () => {
                 buttonText="Gerenciar Plano"
                 buttonLink="/subscription"
               />
-              
+
               {user.isAdmin && (
                 <DashboardCard 
                   icon={<User size={24} className="text-blue-500" />}
@@ -157,9 +166,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         <div className="mr-3">{icon}</div>
         <h3 className="text-xl font-medium text-white">{title}</h3>
       </div>
-      
+
       <p className="text-gray-400 mb-6 flex-grow">{description}</p>
-      
+
       <a 
         href={buttonLink} 
         className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md text-center transition"
