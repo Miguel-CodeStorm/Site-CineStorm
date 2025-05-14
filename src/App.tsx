@@ -37,6 +37,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/confirmado" element={<ConfirmadoPage />} />
       </Routes>
     </Router>
   );
