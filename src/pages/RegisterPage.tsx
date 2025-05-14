@@ -23,12 +23,28 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    // Verificar se o e-mail já está cadastrado
+    const { data: users, error: checkError } = await supabase
+      .from('users')
+      .select('email')
+      .eq('email', email);
+
+    if (checkError) {
+      setErro('Erro ao verificar o e-mail. Tente novamente.');
+      return;
+    }
+
+    if (users && users.length > 0) {
+      setErro('Este e-mail já está cadastrado.');
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
-        data: { nome }
-      }
+        data: { nome },
+      },
     });
 
     if (error) {
