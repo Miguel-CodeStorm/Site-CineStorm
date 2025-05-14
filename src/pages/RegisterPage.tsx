@@ -1,3 +1,5 @@
+// src/pages/RegisterPage.tsx
+
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
@@ -21,16 +23,17 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
-        data: { nome },
-      },
+        data: { nome }
+      }
     });
 
     if (error) {
-      if (error.message.includes('User already registered') || error.message.includes('identities_email_key')) {
+      // 400 = usuário já existe
+      if (error.status === 400) {
         setErro('Este e-mail já está sendo utilizado.');
       } else {
         setErro('Erro ao criar conta: ' + error.message);
@@ -57,7 +60,7 @@ const RegisterPage: React.FC = () => {
           placeholder="Nome de Usuário"
           className="w-full mb-4 p-3 rounded bg-gray-900 border border-gray-700"
           value={nome}
-          onChange={(e) => setNome(e.target.value)}
+          onChange={e => setNome(e.target.value)}
           required
         />
 
@@ -66,7 +69,7 @@ const RegisterPage: React.FC = () => {
           placeholder="Seu e-mail"
           className="w-full mb-4 p-3 rounded bg-gray-900 border border-gray-700"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           required
         />
 
@@ -75,7 +78,7 @@ const RegisterPage: React.FC = () => {
           placeholder="Senha"
           className="w-full mb-4 p-3 rounded bg-gray-900 border border-gray-700"
           value={senha}
-          onChange={(e) => setSenha(e.target.value)}
+          onChange={e => setSenha(e.target.value)}
           required
         />
 
@@ -84,7 +87,7 @@ const RegisterPage: React.FC = () => {
           placeholder="Confirmar Senha"
           className="w-full mb-6 p-3 rounded bg-gray-900 border border-gray-700"
           value={confirmarSenha}
-          onChange={(e) => setConfirmarSenha(e.target.value)}
+          onChange={e => setConfirmarSenha(e.target.value)}
           required
         />
 
@@ -97,7 +100,9 @@ const RegisterPage: React.FC = () => {
 
         <p className="text-sm text-center mt-4">
           Já tem uma conta?{' '}
-          <a href="/login" className="text-blue-400 hover:underline">Entrar</a>
+          <a href="/login" className="text-blue-400 hover:underline">
+            Entrar
+          </a>
         </p>
       </form>
     </div>
