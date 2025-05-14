@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
@@ -9,42 +9,24 @@ const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  
-  const { login, loading, error, isAuthenticated } = useAuthStore();
+  const { login, loading, error } = useAuthStore();
   const navigate = useNavigate();
-
-  // Redireciona se login foi bem-sucedido
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
-
-    if (!email) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email inválido';
-    }
-
-    if (!password) {
-      newErrors.password = 'Senha é obrigatória';
-    } else if (password.length < 6) {
-      newErrors.password = 'A senha deve ter pelo menos 6 caracteres';
-    }
-
+    if (!email) newErrors.email = 'Email é obrigatório';
+    if (!password) newErrors.password = 'Senha é obrigatória';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (validateForm()) {
       await login(email, password);
-      // o redirecionamento agora acontece via useEffect
+      if (!useAuthStore.getState().error) {
+        navigate('/');
+      }
     }
   };
 
@@ -88,11 +70,7 @@ const LoginForm: React.FC = () => {
           </Link>
         </div>
 
-        <Button
-          type="submit"
-          fullWidth
-          isLoading={loading}
-        >
+        <Button type="submit" fullWidth isLoading={loading}>
           Entrar
         </Button>
 
