@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
@@ -30,26 +29,34 @@ function App() {
   } = useAuthStore();
 
   useEffect(() => {
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.user) {
-        const u = data.session.user;
-        setUserFromSession(u);
+    const initializeSession = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.auth.getSession();
+      const session = data?.session;
+
+      if (session?.user && !error) {
+        setUserFromSession(session.user);
       } else {
         logout();
       }
+
+      setLoading(false);
     };
 
-    loadSession();
+    initializeSession();
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUserFromSession(session.user);
       } else {
         logout();
       }
     });
-  }, []);
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [setUserFromSession, logout, setLoading]);
 
   if (loading) {
     return <div className="text-white text-center mt-10">Carregando...</div>;
