@@ -1,5 +1,3 @@
-// src/pages/RegisterPage.tsx
-
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
@@ -32,8 +30,7 @@ const RegisterPage: React.FC = () => {
     });
 
     if (error) {
-      const msg = error.message.toLowerCase();
-      if (msg.includes('already registered') || msg.includes('já cadastrado') || msg.includes('existente')) {
+      if (error.message.includes('User already registered') || error.message.includes('identities_email_key')) {
         setErro('Este e-mail já está sendo utilizado.');
       } else {
         setErro('Erro ao criar conta: ' + error.message);
