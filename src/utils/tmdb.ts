@@ -24,11 +24,21 @@ export const fetchTopRatedMovies = async (page: number = 1) => {
 };
 
 export const fetchMovieDetails = async (id: string) => {
-  const response = await fetch(
-    `${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=pt-BR&append_to_response=credits,videos`
-  );
-  const data = await response.json();
-  return data;
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=pt-BR&append_to_response=credits,videos`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar detalhes do filme (status: ${response.status})`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Erro em fetchMovieDetails:', error);
+    throw new Error('Filme não encontrado ou houve um erro ao buscar os dados');
+  }
 };
 
 export const fetchMoviesByGenre = async (genreId: number, page: number = 1) => {
