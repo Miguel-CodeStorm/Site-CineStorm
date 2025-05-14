@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+// src/App.tsx
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { useAuthStore } from './store/authStore';
 
 // Páginas
 import HomePage from './pages/HomePage';
@@ -17,20 +19,35 @@ import SubscriptionPage from './pages/SubscriptionPage';
 import ConfirmadoPage from './pages/ConfirmadoPage';
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const {
+    user,
+    isAuthenticated,
+    isAdmin,
+    setLoading,
+    loading,
+    setUserFromSession,
+    logout,
+  } = useAuthStore();
 
   useEffect(() => {
     const loadSession = async () => {
       const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user || null);
-      setLoading(false);
+      if (data.session?.user) {
+        const u = data.session.user;
+        setUserFromSession(u);
+      } else {
+        logout();
+      }
     };
 
     loadSession();
 
     supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+      if (session?.user) {
+        setUserFromSession(session.user);
+      } else {
+        logout();
+      }
     });
   }, []);
 
@@ -46,12 +63,12 @@ function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
-        <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
+        <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/recover" element={<RecoverPage />} />
-        <Route path="/dashboard" element={user ? <DashboardPage /> : <Navigate to="/login" />} />
-        <Route path="/admin" element={user ? <AdminPage /> : <Navigate to="/login" />} />
-        <Route path="/subscription" element={user ? <SubscriptionPage /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} />
+        <Route path="/admin" element={isAuthenticated && isAdmin ? <AdminPage /> : <Navigate to="/login" />} />
+        <Route path="/subscription" element={isAuthenticated ? <SubscriptionPage /> : <Navigate to="/login" />} />
         <Route path="/confirmado" element={<ConfirmadoPage />} />
       </Routes>
     </Router>
