@@ -7,14 +7,20 @@ import { useAuthStore } from '../../store/authStore';
 import { useMoviesStore } from '../../store/moviesStore';
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, user, logout, initAuth } = useAuthStore();
-  const { searchQuery, setSearchQuery, searchMoviesAction } = useMoviesStore();
+  const {
+    isAuthenticated,
+    user,
+    logout,
+    initAuth
+  } = useAuthStore();
+
+  const { searchQuery, setSearchQuery } = useMoviesStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Garante que o auth seja inicializado ao montar
+  // Checar status de login ao montar o componente
   useEffect(() => {
     initAuth();
   }, [initAuth]);
@@ -83,10 +89,7 @@ const Navbar: React.FC = () => {
                   <span>{user?.username || 'Usuário'}</span>
                 </Link>
                 <button
-                  onClick={() => {
-                    logout();
-                    navigate('/');
-                  }}
+                  onClick={() => logout()}
                   className="ml-4 text-white/70 hover:text-white flex items-center"
                 >
                   <LogOut size={18} />
@@ -103,7 +106,10 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+          <button
+            className="md:hidden text-white"
+            onClick={() => setIsOpen(!isOpen)}
+          >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -149,7 +155,6 @@ const Navbar: React.FC = () => {
                       onClick={() => {
                         logout();
                         setIsOpen(false);
-                        navigate('/');
                       }}
                       className="text-left text-red-400 py-2 flex items-center"
                     >
@@ -203,7 +208,11 @@ const NavLink: React.FC<NavLinkProps> = ({ to, label, active, className }) => {
 
 const MobileNavLink: React.FC<NavLinkProps> = ({ to, label, onClick, className }) => {
   return (
-    <Link to={to} onClick={onClick} className={`text-white py-2 block ${className}`}>
+    <Link
+      to={to}
+      onClick={onClick}
+      className={`text-white py-2 block ${className}`}
+    >
       {label}
     </Link>
   );
