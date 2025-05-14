@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
@@ -19,47 +20,40 @@ import ConfirmadoPage from './pages/ConfirmadoPage';
 
 function App() {
   const {
-    user,
     isAuthenticated,
     isAdmin,
-    setLoading,
     loading,
     setUserFromSession,
     logout,
   } = useAuthStore();
 
   useEffect(() => {
-    const initializeSession = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      const session = data?.session;
-
-      if (session?.user && !error) {
-        setUserFromSession(session.user);
+    const loadSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setUserFromSession(data.session.user);
       } else {
         logout();
       }
-
-      setLoading(false);
     };
 
-    initializeSession();
+    loadSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUserFromSession(session.user);
       } else {
         logout();
       }
     });
-
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, [setUserFromSession, logout, setLoading]);
+  }, []);
 
   if (loading) {
-    return <div className="text-white text-center mt-10">Carregando...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    );
   }
 
   return (
