@@ -44,5 +44,3 @@ function App() {
 }
 
 export default App;
-// Forçando redeploy
-Commit message: fix: redeploy forçar Vercel
